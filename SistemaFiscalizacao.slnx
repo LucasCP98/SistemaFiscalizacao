@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/backend/" />
+  <Folder Name="/backend/">
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/backend/src/">
     <Project Path="backend/src/SistemaFiscalizacao.API/SistemaFiscalizacao.API.csproj" />
     <Project Path="backend/src/SistemaFiscalizacao.Application/SistemaFiscalizacao.Application.csproj" />
