@@ -5,7 +5,7 @@ using SistemaFiscalizacao.Application.Services;
 namespace SistemaFiscalizacao.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/denuncias")]
 public class DenunciaController : ControllerBase
 {
     private readonly IDenunciaService _denunciaService;
@@ -70,62 +70,5 @@ public class DenunciaController : ControllerBase
             new { id = createdDenuncia.Id },
             createdDenuncia);
     }
-
-    [HttpPut("{id:long}")]
-    [ProducesResponseType(200, Type = typeof(DenunciaDTO))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(404)]
-    public IActionResult Put(
-        long id,
-        [FromBody] DenunciaDTO denuncia)
-    {
-        if (id != denuncia.Id)
-        {
-            return BadRequest(
-                "O ID da URL é diferente do ID da denúncia.");
-        }
-
-        _logger.LogInformation(
-            "Atualizando denúncia com ID: {Id}",
-            id);
-
-        var updatedDenuncia =
-            _denunciaService.Update(denuncia);
-
-        if (updatedDenuncia == null)
-        {
-            _logger.LogWarning(
-                "Denúncia com ID {Id} não encontrada",
-                id);
-
-            return NotFound();
-        }
-
-        return Ok(updatedDenuncia);
-    }
-
-    [HttpDelete("{id:long}")]
-    [ProducesResponseType(204)]
-    [ProducesResponseType(404)]
-    public IActionResult Delete(long id)
-    {
-        var denuncia = _denunciaService.FindById(id);
-
-        if (denuncia == null)
-        {
-            _logger.LogWarning(
-                "Tentativa de excluir denúncia inexistente. ID: {Id}",
-                id);
-
-            return NotFound();
-        }
-
-        _logger.LogInformation(
-            "Excluindo denúncia com ID: {Id}",
-            id);
-
-        _denunciaService.Delete(id);
-
-        return NoContent();
-    }
 }
+ 

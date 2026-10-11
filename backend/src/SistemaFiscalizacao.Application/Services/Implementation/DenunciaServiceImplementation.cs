@@ -40,27 +40,6 @@ public class DenunciaServiceImplementation : IDenunciaService
         return entity.Adapt<DenunciaDTO>();
     }
 
-    public DenunciaDTO? Update(DenunciaDTO denuncia)
-    {
-        var entity = _repository.FindById(denuncia.Id);
-
-        if (entity == null)
-        {
-            return null;
-        }
-
-        denuncia.Adapt(entity);
-
-        entity = _repository.Update(entity);
-
-        return entity.Adapt<DenunciaDTO>();
-    }
-
-    public void Delete(long id)
-    {
-        _repository.Delete(id);
-    }
-
     private string GerarProtocolo()
     {
         return $"DEN-{DateTime.Now:yyyyMMddHHmmss}";
