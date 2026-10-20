@@ -1,4 +1,6 @@
-﻿namespace SistemaFiscalizacao.Domain.Entities;
+﻿using SistemaFiscalizacao.Domain.Enums;
+
+namespace SistemaFiscalizacao.Domain.Entities;
 
 public class Denuncia : BaseEntity
 {
@@ -11,4 +13,8 @@ public class Denuncia : BaseEntity
     public bool Anonima { get; set; }
 
     public DateTime DataCriacao { get; set; }
+
+    public StatusDenuncia Status { get; set; } = StatusDenuncia.Recebida;
+
+    public ResultadoDenuncia? Resultado { get; set; }
 }
