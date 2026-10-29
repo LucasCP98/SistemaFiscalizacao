@@ -58,6 +58,48 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
 
                     b.ToTable("Denuncias");
                 });
+
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Vistoria", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataVistoria")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("DenunciaId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IrregularidadeIdentificada")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Relato")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DenunciaId");
+
+                    b.ToTable("Vistorias");
+                });
+
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Vistoria", b =>
+                {
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.Denuncia", "Denuncia")
+                        .WithMany()
+                        .HasForeignKey("DenunciaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Denuncia");
+                });
 #pragma warning restore 612, 618
         }
     }

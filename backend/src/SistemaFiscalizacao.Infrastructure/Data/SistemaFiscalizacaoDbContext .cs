@@ -12,5 +12,16 @@ namespace SistemaFiscalizacao.Infrastructure.Data
         }
 
         public DbSet<Denuncia> Denuncias { get; set; }
+        public DbSet<Vistoria> Vistorias { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Vistoria>()
+                .HasOne(v => v.Denuncia)
+                .WithMany()
+                .HasForeignKey(v => v.DenunciaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }
