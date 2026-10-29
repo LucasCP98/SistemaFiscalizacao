@@ -1,4 +1,6 @@
-﻿namespace SistemaFiscalizacao.Application.DTOs.Denuncia;
+﻿using SistemaFiscalizacao.Domain.Enums;
+
+namespace SistemaFiscalizacao.Application.DTOs.Denuncia;
 
 public class DenunciaDTO
 {
@@ -13,4 +15,8 @@ public class DenunciaDTO
     public bool Anonima { get; set; }
 
     public DateTime DataCriacao { get; set; }
+
+    public StatusDenuncia Status { get; set; }
+
+    public ResultadoDenuncia? Resultado { get; set; }
 }

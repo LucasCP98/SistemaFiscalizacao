@@ -7,4 +7,6 @@ public interface IRepository<T> where T : class
     T? FindById(long id);
 
     T Create(T entity);
+
+    T Update(T entity);
 }

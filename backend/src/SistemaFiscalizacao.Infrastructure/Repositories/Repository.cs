@@ -28,4 +28,12 @@ public class Repository<T> : IRepository<T> where T : class
 
         return entity;
     }
+
+    public T Update(T entity)
+    {
+        _context.Set<T>().Update(entity);
+        _context.SaveChanges();
+
+        return entity;
+    }
 }

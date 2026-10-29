@@ -9,4 +9,8 @@ public interface IDenunciaService
     DenunciaDTO? FindById(long id);
 
     List<DenunciaDTO> FindAll();
+
+    DenunciaDTO? AlterarStatus(
+       long id,
+       AlterarStatusDenunciaDTO dto);
 }

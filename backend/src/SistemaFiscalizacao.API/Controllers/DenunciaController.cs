@@ -70,5 +70,28 @@ public class DenunciaController : ControllerBase
             new { id = createdDenuncia.Id },
             createdDenuncia);
     }
+
+    [HttpPatch("{id:long}/status")]
+    [ProducesResponseType(typeof(DenunciaDTO), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult AlterarStatus(
+    long id,
+    [FromBody] AlterarStatusDenunciaDTO dto)
+    {
+        try
+        {
+            var denuncia = _denunciaService.AlterarStatus(id, dto);
+
+            if (denuncia is null)
+                return NotFound();
+
+            return Ok(denuncia);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensagem = ex.Message });
+        }
+    }
 }
  
