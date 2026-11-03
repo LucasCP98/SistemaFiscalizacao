@@ -4,6 +4,7 @@ using SistemaFiscalizacao.Application.Services;
 using SistemaFiscalizacao.Application.Services.Implementation;
 using SistemaFiscalizacao.Domain.Entities;
 using SistemaFiscalizacao.Infrastructure.Repositories;
+using SistemaFiscalizacao.Infrastructure.Transactions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddDatabaseConfiguration(builder.Configuration);
 // Injeção de Dependência dos Serviços
 builder.Services.AddScoped<IDenunciaService, DenunciaServiceImplementation>();
 builder.Services.AddScoped<IVistoriaService, VistoriaServiceImplementation>();
+builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 
 // Injeção de Dependência do Repositório Genérico
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

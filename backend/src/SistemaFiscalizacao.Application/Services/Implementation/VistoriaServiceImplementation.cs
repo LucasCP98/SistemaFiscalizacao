@@ -4,6 +4,7 @@ using SistemaFiscalizacao.Domain.Entities;
 using SistemaFiscalizacao.Domain.Enums;
 using SistemaFiscalizacao.Domain.Rules;
 using SistemaFiscalizacao.Infrastructure.Repositories;
+using SistemaFiscalizacao.Infrastructure.Transactions;
 
 namespace SistemaFiscalizacao.Application.Services.Implementation;
 
@@ -11,13 +12,16 @@ public class VistoriaServiceImplementation : IVistoriaService
 {
     private readonly IRepository<Denuncia> _denunciaRepository;
     private readonly IRepository<Vistoria> _vistoriaRepository;
+    private readonly ITransactionManager _transactionManager;
 
     public VistoriaServiceImplementation(
         IRepository<Denuncia> denunciaRepository,
-        IRepository<Vistoria> vistoriaRepository)
+        IRepository<Vistoria> vistoriaRepository,
+        ITransactionManager transactionManager)
     {
         _denunciaRepository = denunciaRepository;
         _vistoriaRepository = vistoriaRepository;
+        _transactionManager = transactionManager;
     }
 
     public VistoriaDTO Create(long denunciaId, CreateVistoriaDTO dto)
@@ -66,14 +70,16 @@ public class VistoriaServiceImplementation : IVistoriaService
                 "Não é possível alterar o status da denúncia conforme o resultado da vistoria.");
         }
 
-        // Persiste a vistoria
-        _vistoriaRepository.Create(vistoria);
+        // Persiste a vistoria e atualiza a denúncia na mesma transação
+        _transactionManager.ExecuteInTransaction(() =>
+        {
+            _vistoriaRepository.Create(vistoria);
 
-        // Atualiza o status e o resultado da denúncia
-        denuncia.Status = novoStatus;
-        denuncia.Resultado = resultado;
+            denuncia.Status = novoStatus;
+            denuncia.Resultado = resultado;
 
-        _denunciaRepository.Update(denuncia);
+            _denunciaRepository.Update(denuncia);
+        });
 
         // Retorna o DTO
         return new VistoriaDTO

@@ -5,6 +5,7 @@ using SistemaFiscalizacao.Application.Services.Implementation;
 using SistemaFiscalizacao.Domain.Entities;
 using SistemaFiscalizacao.Domain.Enums;
 using SistemaFiscalizacao.Infrastructure.Repositories;
+using SistemaFiscalizacao.Infrastructure.Transactions;
 
 namespace SistemaFiscalizacao.Tests.Services;
 
@@ -13,15 +14,23 @@ public class VistoriaServiceTests
     private readonly Mock<IRepository<Denuncia>> _denunciaRepository;
     private readonly Mock<IRepository<Vistoria>> _vistoriaRepository;
     private readonly VistoriaServiceImplementation _service;
+    private readonly Mock<ITransactionManager> _transactionManager;
 
     public VistoriaServiceTests()
     {
         _denunciaRepository = new Mock<IRepository<Denuncia>>();
         _vistoriaRepository = new Mock<IRepository<Vistoria>>();
+        _transactionManager = new Mock<ITransactionManager>();
+
+        // Executa a operação recebida pelo método de transação
+        _transactionManager
+            .Setup(x => x.ExecuteInTransaction(It.IsAny<Action>()))
+            .Callback<Action>(operation => operation());
 
         _service = new VistoriaServiceImplementation(
             _denunciaRepository.Object,
-            _vistoriaRepository.Object);
+            _vistoriaRepository.Object,
+            _transactionManager.Object);
     }
 
     [Fact]
