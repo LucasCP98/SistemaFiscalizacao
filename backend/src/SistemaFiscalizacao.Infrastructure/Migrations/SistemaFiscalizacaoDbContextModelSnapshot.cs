@@ -98,6 +98,37 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.ToTable("Notificacoes");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Regularizacao", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataInformada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("DentroDoPrazo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("NotificacaoId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificacaoId");
+
+                    b.ToTable("Regularizacoes");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Vistoria", b =>
                 {
                     b.Property<long>("Id")
@@ -146,6 +177,17 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.Navigation("Denuncia");
 
                     b.Navigation("Vistoria");
+                });
+
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Regularizacao", b =>
+                {
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.Notificacao", "Notificacao")
+                        .WithMany()
+                        .HasForeignKey("NotificacaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Notificacao");
                 });
 
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Vistoria", b =>

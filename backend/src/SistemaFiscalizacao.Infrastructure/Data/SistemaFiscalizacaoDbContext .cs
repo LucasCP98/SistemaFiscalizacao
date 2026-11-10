@@ -15,6 +15,7 @@ namespace SistemaFiscalizacao.Infrastructure.Data
         public DbSet<Denuncia> Denuncias { get; set; }
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Notificacao> Notificacoes { get; set; }
+        public DbSet<Regularizacao> Regularizacoes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,13 @@ namespace SistemaFiscalizacao.Infrastructure.Data
                 .HasOne(n => n.Vistoria)
                 .WithMany()
                 .HasForeignKey(n => n.VistoriaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relacionamento: Regularizacao -> Notificacao
+            modelBuilder.Entity<Regularizacao>()
+                .HasOne(r => r.Notificacao)
+                .WithMany()
+                .HasForeignKey(r => r.NotificacaoId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
