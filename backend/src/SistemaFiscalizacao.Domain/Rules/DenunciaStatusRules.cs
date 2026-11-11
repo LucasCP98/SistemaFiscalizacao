@@ -1,4 +1,5 @@
-﻿using SistemaFiscalizacao.Domain.Enums;
+﻿
+using SistemaFiscalizacao.Domain.Enums;
 
 namespace SistemaFiscalizacao.Domain.Rules;
 
@@ -27,7 +28,7 @@ public static class DenunciaStatusRules
                 proximo == StatusDenuncia.AguardandoNovaVistoria,
 
             StatusDenuncia.AguardandoNovaVistoria =>
-                proximo == StatusDenuncia.EmVistoria
+                proximo == StatusDenuncia.Encerrada
                 || proximo == StatusDenuncia.EmProcessoDeInfracao,
 
             StatusDenuncia.EmProcessoDeInfracao =>

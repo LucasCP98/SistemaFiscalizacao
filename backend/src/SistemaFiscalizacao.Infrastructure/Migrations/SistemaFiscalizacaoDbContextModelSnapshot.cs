@@ -149,6 +149,9 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.Property<bool>("IrregularidadeIdentificada")
                         .HasColumnType("bit");
 
+                    b.Property<int>("NumeroVistoria")
+                        .HasColumnType("int");
+
                     b.Property<string>("Relato")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

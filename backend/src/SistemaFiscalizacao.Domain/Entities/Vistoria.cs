@@ -13,4 +13,6 @@ public class Vistoria : BaseEntity
     public DateTime DataCriacao { get; set; }
 
     public Denuncia Denuncia { get; set; } = null!;
+
+    public int NumeroVistoria { get; set; }
 }

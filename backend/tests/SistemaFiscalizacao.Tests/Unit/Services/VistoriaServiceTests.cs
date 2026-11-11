@@ -22,7 +22,6 @@ public class VistoriaServiceTests
         _vistoriaRepository = new Mock<IRepository<Vistoria>>();
         _transactionManager = new Mock<ITransactionManager>();
 
-        // Executa a operação recebida pelo método de transação
         _transactionManager
             .Setup(x => x.ExecuteInTransaction(It.IsAny<Action>()))
             .Callback<Action>(operation => operation());
@@ -36,36 +35,20 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithIrregularity_ShouldUpdateDenunciaToAguardandoRegularizacao()
     {
-        // Arrange
         var denuncia = new Denuncia
         {
             Id = 1,
             Status = StatusDenuncia.EmVistoria
         };
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = DateTime.Now,
-            Relato = "Irregularidade identificada.",
-            IrregularidadeIdentificada = true
-        };
+        ConfigurarDenuncia(denuncia);
+        ConfigurarVistoriasExistentes();
+        ConfigurarPersistencia();
 
-        _denunciaRepository
-            .Setup(r => r.FindById(1))
-            .Returns(denuncia);
+        var dto = CriarDTO(true);
 
-        _vistoriaRepository
-            .Setup(r => r.Create(It.IsAny<Vistoria>()))
-            .Returns((Vistoria v) => v);
-
-        _denunciaRepository
-            .Setup(r => r.Update(It.IsAny<Denuncia>()))
-            .Returns((Denuncia d) => d);
-
-        // Act
         var result = _service.Create(1, dto);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Equal(1, result.DenunciaId);
         Assert.True(result.IrregularidadeIdentificada);
@@ -77,7 +60,8 @@ public class VistoriaServiceTests
         Assert.Null(denuncia.Resultado);
 
         _vistoriaRepository.Verify(
-            r => r.Create(It.IsAny<Vistoria>()),
+            r => r.Create(It.Is<Vistoria>(
+                v => v.NumeroVistoria == 1)),
             Times.Once);
 
         _denunciaRepository.Verify(
@@ -88,36 +72,20 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithoutIrregularity_ShouldCloseDenunciaAsImprocedente()
     {
-        // Arrange
         var denuncia = new Denuncia
         {
             Id = 1,
             Status = StatusDenuncia.EmVistoria
         };
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = DateTime.Now,
-            Relato = "Nenhuma irregularidade encontrada.",
-            IrregularidadeIdentificada = false
-        };
+        ConfigurarDenuncia(denuncia);
+        ConfigurarVistoriasExistentes();
+        ConfigurarPersistencia();
 
-        _denunciaRepository
-            .Setup(r => r.FindById(1))
-            .Returns(denuncia);
+        var dto = CriarDTO(false);
 
-        _vistoriaRepository
-            .Setup(r => r.Create(It.IsAny<Vistoria>()))
-            .Returns((Vistoria v) => v);
-
-        _denunciaRepository
-            .Setup(r => r.Update(It.IsAny<Denuncia>()))
-            .Returns((Denuncia d) => d);
-
-        // Act
         var result = _service.Create(1, dto);
 
-        // Assert
         Assert.NotNull(result);
         Assert.False(result.IrregularidadeIdentificada);
 
@@ -130,7 +98,98 @@ public class VistoriaServiceTests
             denuncia.Resultado);
 
         _vistoriaRepository.Verify(
-            r => r.Create(It.IsAny<Vistoria>()),
+            r => r.Create(It.Is<Vistoria>(
+                v => v.NumeroVistoria == 1)),
+            Times.Once);
+
+        _denunciaRepository.Verify(
+            r => r.Update(denuncia),
+            Times.Once);
+    }
+
+    [Fact]
+    public void Create_SecondInspectionWithIrregularity_ShouldUpdateDenunciaToEmProcessoDeInfracao()
+    {
+        var denuncia = new Denuncia
+        {
+            Id = 1,
+            Status = StatusDenuncia.AguardandoNovaVistoria
+        };
+
+        ConfigurarDenuncia(denuncia);
+
+        ConfigurarVistoriasExistentes(
+            new Vistoria
+            {
+                Id = 1,
+                DenunciaId = 1,
+                NumeroVistoria = 1
+            });
+
+        ConfigurarPersistencia();
+
+        var dto = CriarDTO(true);
+
+        var result = _service.Create(1, dto);
+
+        Assert.NotNull(result);
+        Assert.True(result.IrregularidadeIdentificada);
+
+        Assert.Equal(
+            StatusDenuncia.EmProcessoDeInfracao,
+            denuncia.Status);
+
+        Assert.Null(denuncia.Resultado);
+
+        _vistoriaRepository.Verify(
+            r => r.Create(It.Is<Vistoria>(
+                v => v.NumeroVistoria == 2)),
+            Times.Once);
+
+        _denunciaRepository.Verify(
+            r => r.Update(denuncia),
+            Times.Once);
+    }
+
+    [Fact]
+    public void Create_SecondInspectionWithoutIrregularity_ShouldCloseDenunciaAsRegularizada()
+    {
+        var denuncia = new Denuncia
+        {
+            Id = 1,
+            Status = StatusDenuncia.AguardandoNovaVistoria
+        };
+
+        ConfigurarDenuncia(denuncia);
+
+        ConfigurarVistoriasExistentes(
+            new Vistoria
+            {
+                Id = 1,
+                DenunciaId = 1,
+                NumeroVistoria = 1
+            });
+
+        ConfigurarPersistencia();
+
+        var dto = CriarDTO(false);
+
+        var result = _service.Create(1, dto);
+
+        Assert.NotNull(result);
+        Assert.False(result.IrregularidadeIdentificada);
+
+        Assert.Equal(
+            StatusDenuncia.Encerrada,
+            denuncia.Status);
+
+        Assert.Equal(
+            ResultadoDenuncia.Regularizada,
+            denuncia.Resultado);
+
+        _vistoriaRepository.Verify(
+            r => r.Create(It.Is<Vistoria>(
+                v => v.NumeroVistoria == 2)),
             Times.Once);
 
         _denunciaRepository.Verify(
@@ -141,23 +200,15 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithNonExistingDenuncia_ShouldThrowInvalidOperationException()
     {
-        // Arrange
         _denunciaRepository
             .Setup(r => r.FindById(1))
             .Returns((Denuncia?)null);
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = DateTime.Now,
-            Relato = "Relato da vistoria.",
-            IrregularidadeIdentificada = true
-        };
+        var dto = CriarDTO(true);
 
-        // Act
         var exception = Assert.Throws<InvalidOperationException>(
             () => _service.Create(1, dto));
 
-        // Assert
         Assert.Equal("Denúncia não encontrada.", exception.Message);
 
         _vistoriaRepository.Verify(
@@ -172,29 +223,19 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithInvalidDenunciaStatus_ShouldThrowInvalidOperationException()
     {
-        // Arrange
         var denuncia = new Denuncia
         {
             Id = 1,
             Status = StatusDenuncia.Recebida
         };
 
-        _denunciaRepository
-            .Setup(r => r.FindById(1))
-            .Returns(denuncia);
+        ConfigurarDenuncia(denuncia);
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = DateTime.Now,
-            Relato = "Relato da vistoria.",
-            IrregularidadeIdentificada = true
-        };
+        var dto = CriarDTO(true);
 
-        // Act
         var exception = Assert.Throws<InvalidOperationException>(
             () => _service.Create(1, dto));
 
-        // Assert
         Assert.Contains("status adequado", exception.Message);
 
         _vistoriaRepository.Verify(
@@ -209,29 +250,20 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithDefaultDate_ShouldThrowInvalidOperationException()
     {
-        // Arrange
         var denuncia = new Denuncia
         {
             Id = 1,
             Status = StatusDenuncia.EmVistoria
         };
 
-        _denunciaRepository
-            .Setup(r => r.FindById(1))
-            .Returns(denuncia);
+        ConfigurarDenuncia(denuncia);
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = default,
-            Relato = "Relato da vistoria.",
-            IrregularidadeIdentificada = true
-        };
+        var dto = CriarDTO(true);
+        dto.DataVistoria = default;
 
-        // Act
         var exception = Assert.Throws<InvalidOperationException>(
             () => _service.Create(1, dto));
 
-        // Assert
         Assert.Equal("A data da vistoria é obrigatória.", exception.Message);
 
         _vistoriaRepository.Verify(
@@ -242,33 +274,59 @@ public class VistoriaServiceTests
     [Fact]
     public void Create_WithEmptyReport_ShouldThrowInvalidOperationException()
     {
-        // Arrange
         var denuncia = new Denuncia
         {
             Id = 1,
             Status = StatusDenuncia.EmVistoria
         };
 
-        _denunciaRepository
-            .Setup(r => r.FindById(1))
-            .Returns(denuncia);
+        ConfigurarDenuncia(denuncia);
 
-        var dto = new CreateVistoriaDTO
-        {
-            DataVistoria = DateTime.Now,
-            Relato = " ",
-            IrregularidadeIdentificada = true
-        };
+        var dto = CriarDTO(true);
+        dto.Relato = " ";
 
-        // Act
         var exception = Assert.Throws<InvalidOperationException>(
             () => _service.Create(1, dto));
 
-        // Assert
         Assert.Equal("O relato da vistoria é obrigatório.", exception.Message);
 
         _vistoriaRepository.Verify(
             r => r.Create(It.IsAny<Vistoria>()),
             Times.Never);
+    }
+
+    private void ConfigurarDenuncia(Denuncia denuncia)
+    {
+        _denunciaRepository
+            .Setup(r => r.FindById(denuncia.Id))
+            .Returns(denuncia);
+    }
+
+    private void ConfigurarVistoriasExistentes(params Vistoria[] vistorias)
+    {
+        _vistoriaRepository
+            .Setup(r => r.FindAll())
+            .Returns(vistorias.ToList());
+    }
+
+    private void ConfigurarPersistencia()
+    {
+        _vistoriaRepository
+            .Setup(r => r.Create(It.IsAny<Vistoria>()))
+            .Returns((Vistoria v) => v);
+
+        _denunciaRepository
+            .Setup(r => r.Update(It.IsAny<Denuncia>()))
+            .Returns((Denuncia d) => d);
+    }
+
+    private static CreateVistoriaDTO CriarDTO(bool irregularidade)
+    {
+        return new CreateVistoriaDTO
+        {
+            DataVistoria = DateTime.Now,
+            Relato = "Relato da vistoria.",
+            IrregularidadeIdentificada = irregularidade
+        };
     }
 }

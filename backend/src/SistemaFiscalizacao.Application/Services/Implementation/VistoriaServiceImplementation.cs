@@ -1,5 +1,4 @@
-﻿
-using SistemaFiscalizacao.Application.DTOs.Vistoria;
+﻿using SistemaFiscalizacao.Application.DTOs.Vistoria;
 using SistemaFiscalizacao.Domain.Entities;
 using SistemaFiscalizacao.Domain.Enums;
 using SistemaFiscalizacao.Domain.Rules;
@@ -26,51 +25,79 @@ public class VistoriaServiceImplementation : IVistoriaService
 
     public VistoriaDTO Create(long denunciaId, CreateVistoriaDTO dto)
     {
-        // Verifica se a denúncia existe
         var denuncia = _denunciaRepository.FindById(denunciaId);
 
         if (denuncia is null)
             throw new InvalidOperationException("Denúncia não encontrada.");
 
-        // Verifica se a denúncia está na etapa correta
-        if (denuncia.Status != StatusDenuncia.EmVistoria)
+        var primeiraVistoria =
+            denuncia.Status == StatusDenuncia.EmVistoria;
+
+        var novaVistoria =
+            denuncia.Status == StatusDenuncia.AguardandoNovaVistoria;
+
+        if (!primeiraVistoria && !novaVistoria)
+        {
             throw new InvalidOperationException(
                 "A denúncia não está no status adequado para receber uma vistoria.");
+        }
 
-        // Valida os dados recebidos
         if (dto.DataVistoria == default)
-            throw new InvalidOperationException("A data da vistoria é obrigatória.");
+            throw new InvalidOperationException(
+                "A data da vistoria é obrigatória.");
 
         if (string.IsNullOrWhiteSpace(dto.Relato))
-            throw new InvalidOperationException("O relato da vistoria é obrigatório.");
+            throw new InvalidOperationException(
+                "O relato da vistoria é obrigatório.");
 
-        // Cria a entidade
+        var numeroVistoria = _vistoriaRepository
+            .FindAll()
+            .Where(v => v.DenunciaId == denunciaId)
+            .Select(v => v.NumeroVistoria)
+            .DefaultIfEmpty(0)
+            .Max() + 1;
+
         var vistoria = new Vistoria
         {
             DenunciaId = denunciaId,
+            NumeroVistoria = numeroVistoria,
             DataVistoria = dto.DataVistoria,
-            Relato = dto.Relato,
+            Relato = dto.Relato.Trim(),
             IrregularidadeIdentificada = dto.IrregularidadeIdentificada,
             DataCriacao = DateTime.UtcNow
         };
 
-        // Define o novo status conforme o resultado da vistoria
-        var novoStatus = vistoria.IrregularidadeIdentificada
-            ? StatusDenuncia.AguardandoRegularizacao
-            : StatusDenuncia.Encerrada;
+        StatusDenuncia novoStatus;
+        ResultadoDenuncia? resultado;
 
-        var resultado = vistoria.IrregularidadeIdentificada
-            ? (ResultadoDenuncia?)null
-            : ResultadoDenuncia.Improcedente;
+        if (primeiraVistoria)
+        {
+            novoStatus = vistoria.IrregularidadeIdentificada
+                ? StatusDenuncia.AguardandoRegularizacao
+                : StatusDenuncia.Encerrada;
 
-        // Valida se a transição de status é permitida
-        if (!DenunciaStatusRules.PodeTransicionar(denuncia.Status, novoStatus))
+            resultado = vistoria.IrregularidadeIdentificada
+                ? null
+                : ResultadoDenuncia.Improcedente;
+        }
+        else
+        {
+            novoStatus = vistoria.IrregularidadeIdentificada
+                ? StatusDenuncia.EmProcessoDeInfracao
+                : StatusDenuncia.Encerrada;
+
+            resultado = vistoria.IrregularidadeIdentificada
+                ? null
+                : ResultadoDenuncia.Regularizada;
+        }
+
+        if (!DenunciaStatusRules.PodeTransicionar(
+                denuncia.Status, novoStatus))
         {
             throw new InvalidOperationException(
                 "Não é possível alterar o status da denúncia conforme o resultado da vistoria.");
         }
 
-        // Persiste a vistoria e atualiza a denúncia na mesma transação
         _transactionManager.ExecuteInTransaction(() =>
         {
             _vistoriaRepository.Create(vistoria);
@@ -81,7 +108,6 @@ public class VistoriaServiceImplementation : IVistoriaService
             _denunciaRepository.Update(denuncia);
         });
 
-        // Retorna o DTO
         return new VistoriaDTO
         {
             Id = vistoria.Id,
