@@ -16,6 +16,7 @@ namespace SistemaFiscalizacao.Infrastructure.Data
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Notificacao> Notificacoes { get; set; }
         public DbSet<Regularizacao> Regularizacoes { get; set; }
+        public DbSet<ProcessoInfracao> ProcessosInfracao { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -48,6 +49,30 @@ namespace SistemaFiscalizacao.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(r => r.NotificacaoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Relacionamento: ProcessoInfracao -> Denuncia
+            modelBuilder.Entity<ProcessoInfracao>()
+                .HasOne(p => p.Denuncia)
+                .WithMany()
+                .HasForeignKey(p => p.DenunciaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relacionamento: ProcessoInfracao -> Vistoria
+            modelBuilder.Entity<ProcessoInfracao>()
+                .HasOne(p => p.Vistoria)
+                .WithMany()
+                .HasForeignKey(p => p.VistoriaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Índice único: um processo de infração por denúncia
+            modelBuilder.Entity<ProcessoInfracao>()
+                .HasIndex(p => p.DenunciaId)
+                .IsUnique();
+
+            // Precisão do valor da multa
+            modelBuilder.Entity<ProcessoInfracao>()
+                .Property(p => p.ValorMulta)
+                .HasPrecision(18, 2);
         }
     }
 }

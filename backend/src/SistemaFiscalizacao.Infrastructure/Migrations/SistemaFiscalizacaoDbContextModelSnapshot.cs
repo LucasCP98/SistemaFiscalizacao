@@ -98,6 +98,51 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.ToTable("Notificacoes");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DataAbertura")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("DenunciaId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumeroProcesso")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("ValorMulta")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("VistoriaId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DenunciaId")
+                        .IsUnique();
+
+                    b.HasIndex("VistoriaId");
+
+                    b.ToTable("ProcessosInfracao");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Regularizacao", b =>
                 {
                     b.Property<long>("Id")
@@ -164,6 +209,25 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Notificacao", b =>
+                {
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.Denuncia", "Denuncia")
+                        .WithMany()
+                        .HasForeignKey("DenunciaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.Vistoria", "Vistoria")
+                        .WithMany()
+                        .HasForeignKey("VistoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Denuncia");
+
+                    b.Navigation("Vistoria");
+                });
+
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", b =>
                 {
                     b.HasOne("SistemaFiscalizacao.Domain.Entities.Denuncia", "Denuncia")
                         .WithMany()
