@@ -184,6 +184,43 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.ToTable("ProcessosInfracao");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Recurso", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DataApresentacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataDecisao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Decisao")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Justificativa")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ProcessoInfracaoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessoInfracaoId");
+
+                    b.ToTable("Recursos");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Regularizacao", b =>
                 {
                     b.Property<long>("Id")
@@ -298,6 +335,17 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.Navigation("Vistoria");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Recurso", b =>
+                {
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", "ProcessoInfracao")
+                        .WithMany("Recursos")
+                        .HasForeignKey("ProcessoInfracaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProcessoInfracao");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Regularizacao", b =>
                 {
                     b.HasOne("SistemaFiscalizacao.Domain.Entities.Notificacao", "Notificacao")
@@ -323,6 +371,8 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", b =>
                 {
                     b.Navigation("Multa");
+
+                    b.Navigation("Recursos");
                 });
 #pragma warning restore 612, 618
         }

@@ -18,6 +18,7 @@ namespace SistemaFiscalizacao.Infrastructure.Data
         public DbSet<Regularizacao> Regularizacoes { get; set; }
         public DbSet<ProcessoInfracao> ProcessosInfracao { get; set; }
         public DbSet<Multa> Multas { get; set; }
+        public DbSet<Recurso> Recursos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -93,6 +94,13 @@ namespace SistemaFiscalizacao.Infrastructure.Data
             modelBuilder.Entity<Multa>()
                 .Property(m => m.ValorMaximo)
                 .HasPrecision(18, 2);
+
+            // Relacionamento: Recurso -> ProcessoInfracao
+            modelBuilder.Entity<Recurso>()
+                .HasOne(r => r.ProcessoInfracao)
+                .WithMany(p => p.Recursos)
+                .HasForeignKey(r => r.ProcessoInfracaoId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

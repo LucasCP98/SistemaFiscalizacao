@@ -26,4 +26,6 @@ public class ProcessoInfracao : BaseEntity
     public Vistoria Vistoria { get; set; } = null!;
     
     public Multa? Multa { get; set; }
+
+    public ICollection<Recurso> Recursos { get; set; } = new List<Recurso>();
 }
