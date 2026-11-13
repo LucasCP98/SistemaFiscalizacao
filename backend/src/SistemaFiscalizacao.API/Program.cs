@@ -31,6 +31,7 @@ builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 builder.Services.AddScoped<INotificacaoService, NotificacaoServiceImplementation>();
 builder.Services.AddScoped<IRegularizacaoService, RegularizacaoServiceImplementation>();
 builder.Services.AddScoped<IProcessoInfracaoService, ProcessoInfracaoServiceImplementation>();
+builder.Services.AddScoped<IMultaService, MultaServiceImplementation>();
 
 // Injeção de Dependência do Repositório Genérico
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));

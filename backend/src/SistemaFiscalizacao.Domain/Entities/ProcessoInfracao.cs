@@ -24,4 +24,6 @@ public class ProcessoInfracao : BaseEntity
     public Denuncia Denuncia { get; set; } = null!;
 
     public Vistoria Vistoria { get; set; } = null!;
+    
+    public Multa? Multa { get; set; }
 }

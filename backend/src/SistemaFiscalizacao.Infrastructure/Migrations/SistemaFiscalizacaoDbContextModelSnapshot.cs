@@ -59,6 +59,47 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.ToTable("Denuncias");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Multa", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("DataAplicacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("ProcessoInfracaoId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValorMaximo")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValorMinimo")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcessoInfracaoId")
+                        .IsUnique();
+
+                    b.ToTable("Multas");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Notificacao", b =>
                 {
                     b.Property<long>("Id")
@@ -208,6 +249,17 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                     b.ToTable("Vistorias");
                 });
 
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Multa", b =>
+                {
+                    b.HasOne("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", "ProcessoInfracao")
+                        .WithOne("Multa")
+                        .HasForeignKey("SistemaFiscalizacao.Domain.Entities.Multa", "ProcessoInfracaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProcessoInfracao");
+                });
+
             modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.Notificacao", b =>
                 {
                     b.HasOne("SistemaFiscalizacao.Domain.Entities.Denuncia", "Denuncia")
@@ -266,6 +318,11 @@ namespace SistemaFiscalizacao.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Denuncia");
+                });
+
+            modelBuilder.Entity("SistemaFiscalizacao.Domain.Entities.ProcessoInfracao", b =>
+                {
+                    b.Navigation("Multa");
                 });
 #pragma warning restore 612, 618
         }

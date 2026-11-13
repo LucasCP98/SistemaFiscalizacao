@@ -17,7 +17,7 @@ namespace SistemaFiscalizacao.Infrastructure.Data
         public DbSet<Notificacao> Notificacoes { get; set; }
         public DbSet<Regularizacao> Regularizacoes { get; set; }
         public DbSet<ProcessoInfracao> ProcessosInfracao { get; set; }
-
+        public DbSet<Multa> Multas { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -72,6 +72,26 @@ namespace SistemaFiscalizacao.Infrastructure.Data
             // Precisão do valor da multa
             modelBuilder.Entity<ProcessoInfracao>()
                 .Property(p => p.ValorMulta)
+                .HasPrecision(18, 2);
+
+            // Relacionamento: Multa -> ProcessoInfracao
+            modelBuilder.Entity<Multa>()
+                .HasOne(m => m.ProcessoInfracao)
+                .WithOne(p => p.Multa)
+                .HasForeignKey<Multa>(m => m.ProcessoInfracaoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Precisão dos valores monetários da multa
+            modelBuilder.Entity<Multa>()
+                .Property(m => m.Valor)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Multa>()
+                .Property(m => m.ValorMinimo)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Multa>()
+                .Property(m => m.ValorMaximo)
                 .HasPrecision(18, 2);
         }
     }
